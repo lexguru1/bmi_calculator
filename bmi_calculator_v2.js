@@ -1,0 +1,171 @@
+function formatOutput(userObject) {
+    // we can access properties on object like:
+    // userObject.propertyName
+    return `
+      **************
+      BMI CALCULATOR
+      **************
+  
+      age: ${userObject.age} years
+      gender: ${userObject.gender}
+      height: ${userObject.heightInM} m
+      weight: ${userObject.weightInKg} kg
+      do you exercise daily? ${userObject.dailyExercise}
+  
+      ****************
+      FACING THE FACTS
+      ****************
+  
+      Your BMI is ${userObject.BMI}
+  
+      A BMI under 18.5 is considered underweight
+      A BMI above 25 is considered overweight
+  
+      Your ideal weight is ${userObject.idealWeightKg} kg
+      With a normal lifestyle you burn ${userObject.dailyCalories} calories a day
+  
+      **********
+      DIET PLAN
+      **********
+  
+      If you want to reach your ideal weight of ${userObject.idealWeightKg} kg:
+  
+      Eat ${userObject.dietCalories} calories a day
+      For ${userObject.dietWeeks} weeks
+      `;
+}
+function validateNumberOfInputs(argv) {
+    if (argv.length !== 7 ) {
+        console.log(`
+        You gave ${argv.length - 2} argument(s) to the program
+    
+        Please provide 5 arguments for
+        
+        weight (kg), 
+        height (m), 
+        age (years), 
+        wether you exercise daily (yes or no)
+        and your gender (m or f)
+        
+        Example:
+    
+        $ node index.js 82 1.79 32 yes m
+      `);
+      process.exit();
+    }
+}
+function validateWeightHeightAge(weight, height, age, argv) {
+    if (isNaN(weight) || isNaN(height) || isNaN(age)) {
+        console.log(`
+        Please make sure weight, height and age are numbers:
+  
+        weight (kg) example: 82 | your input: ${argv[2]}
+        height (m) example 1.79 | your input: ${argv[3]}
+        age (years) example 32  | your input: ${argv[4]} 
+  
+        $ node index.js 82 1.79 32 yes m
+      `);
+    
+      process.exit();
+    }
+    if (age < 20) {
+        console.log(`
+          This BMI calculator was designed to be used by people older than 20
+      
+          BMI is calculated differently for young people.
+      
+          Please visit: https://en.wikipedia.org/wiki/Body_mass_index#Children_(aged_2_to_20)
+      
+          For more information
+        `);
+    
+        process.exit();
+      }
+    
+      if (weight < 30 || weight > 300) {
+        console.log(`
+          Please enter a weight in kgs
+          
+          Your weight of ${weight} kgs does not fall in the range between 30 kg and 300 kg
+      
+          If you weight is below 30 kg or over 300 kg seek professional medical help
+        `);
+    
+        process.exit();
+      }
+}
+function validateDailyExercise(dailyExercise) {
+    if (dailyExercise !== 'yes' && dailyExercise !== 'no') {
+        console.log(`
+        Please specify wether you exercise daily with yes or no
+  
+        You entered: ${dailyExercise}
+  
+        (Don't worry, we won't judge you if you enter no)
+    `);
+    process.exit();
+    }
+}
+function validateGender(gender) {
+    if (gender !== 'm' && gender !== 'f') {
+        console.log(`
+        Please specify wether you are a male "m" or female "f"
+  
+        You entered: ${gender}
+      `);
+    process.exit();
+    }
+}
+function calculateBMI(weight, height) {
+    return weight / (height * height);
+}
+function calculateBMR(weight, height, ageOfUser, genderOfUser) {
+    const heightInCm = height * 100;
+    return (genderOfUser === "m") ? 10 * weight + 6.25 * heightInCm - 5 * ageOfUser + 50 : BMR = 10 * weight + 6.25 * heightInCm - 5 * ageOfUser - 150;
+}
+function calculateIdealWeight(height) {
+    return 22.5*height*height;
+}
+function calculateDailyCalories(BMR, exercise) {
+    return (exercise === 'yes') ? BMR * 1.6 : BMR * 1.4;
+}
+function calculateDietWeeks(weightToLose) {
+    return weightToLose/0.5;
+}
+function calculateDietCalorie(weightToLose, dailyCalories) {
+    return (weightToLose<0) ? dailyCalories + 500 : dailyCalories - 500;
+}
+function bmiCalculator() {
+  validateNumberOfInputs(process.argv);
+  const weightInKg = parseInt(process.argv[2]);
+  const heightInM = parseFloat(process.argv[3]);
+  const age = parseInt(process.argv[4]);
+  const dailyExercise = process.argv[5];
+  const gender = process.argv[6];
+  const BMI = calculateBMI(weightInKg, heightInM);
+  const BMR = calculateBMR(weightInKg, heightInM, age, gender);
+  const idealWeightKg = calculateIdealWeight(heightInM);
+  const dailyCalories = calculateDailyCalories(BMR, dailyExercise)
+  const weightToLoseKg = weightInKg - idealWeightKg;
+  const dietWeeks = Math.abs(calculateDietWeeks(weightToLoseKg));
+  const dietCalories = calculateDietCalorie(weightToLoseKg,dailyCalories);
+  validateWeightHeightAge(weightInKg, heightInM, age, process.argv);
+  validateDailyExercise(dailyExercise);
+  validateGender(gender);
+  const user = {
+    weightInKg: weightInKg,
+    heightInM: heightInM,
+    age: age,
+    dailyExercise: dailyExercise,
+    gender: gender,
+    BMI: BMI,
+    idealWeightKg: idealWeightKg,
+    dailyCalories: dailyCalories,
+    weightToLoseKg: weightToLoseKg,
+    dietWeeks: dietWeeks,
+    dietCalories: dietCalories,
+  };
+  const output = formatOutput(user);
+  console.log(output);
+}
+bmiCalculator();
